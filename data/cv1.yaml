@@ -1,0 +1,28 @@
+name: Sirajulhaq Wahaj
+email: siraj.wahaj@outlook.com
+phone: "+46 727 718 823"
+address: "Professorsgatan 8B, 215 53 Malmö, Sweden"
+linkedin: "https://linkedin.com/in/sirajwahaj"
+github: "https://github.com/sirajwahaj"
+summary: "DevOps Engineer student with expertise in IT infrastructure, automation, and cloud platforms."
+last_updated: "September 2025"
+
+education:
+  - title: DevOps Engineer
+    institution: Jensen Yrkeshögskola, Sweden
+    date: Aug 2024 – Jun 2026
+
+skills:
+  - category: Programming
+    items: Python, Bash, PowerShell
+  - category: DevOps
+    items: Docker, Kubernetes, CI/CD
+
+professional_experience:
+  - title: IT Support Intern
+    company: ReDi School of Digital Integration
+    date: Mar 2024 – May 2024
+    description:
+      - Configured and maintained computer systems.
+      - Provided one-on-one technical support.
+      - Documented recurring issues.
