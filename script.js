@@ -1,104 +1,85 @@
-// script.js
-
-// Load YAML parser
-// Make sure to include this in your HTML: 
-// <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
-
+<script>
 async function loadCVData() {
     try {
-        const response = await fetch('cv-data.yaml');
-        if (!response.ok) {
-            throw new Error(`Failed to fetch YAML: ${response.statusText}`);
-        }
-        const yamlText = await response.text();
-        const cvData = jsyaml.load(yamlText);
+        const response = await fetch('cv-data.json'); // Fetch external JSON
+        const cvData = await response.json();
         updateCV(cvData);
     } catch (error) {
-        console.error('Error loading YAML data:', error);
+        console.error('Failed to load CV data:', error);
     }
 }
 
+// Update the CV content
 function updateCV(data) {
-    // Update basic information
-    document.getElementById('name').textContent = data.name;
-    document.getElementById('email').textContent = data.email;
-    document.getElementById('phone').textContent = data.phone;
-    document.getElementById('address').textContent = data.address;
+    document.getElementById('cv-name').textContent = data.name;
+    document.getElementById('cv-email').textContent = data.email;
+    document.getElementById('cv-phone').textContent = data.phone;
+    document.getElementById('cv-address').textContent = data.address;
+    document.getElementById('cv-linkedin').href = data.linkedin;
+    document.getElementById('cv-github').href = data.github;
+    document.getElementById('cv-summary').textContent = data.summary;
+    document.getElementById('cv-last-updated').textContent = data.last_updated;
 
-    // Update social links
-    document.getElementById('linkedin').href = data.linkedin;
-    document.getElementById('github').href = data.github;
-
-    // Update summary
-    document.getElementById('summary').textContent = data.summary;
-
-    // Update education
-    const educationContainer = document.getElementById('education');
-    educationContainer.innerHTML = '';
-    data.education.forEach(item => {
-        const div = document.createElement('div');
-        div.classList.add('education-item');
-        div.innerHTML = `
-            <h3>${item.title}</h3>
-            <p>${item.institution}</p>
-            <span>${item.date}</span>
+    // Education
+    const eduContainer = document.getElementById('cv-education');
+    data.education.forEach(edu => {
+        eduContainer.innerHTML += `
+            <div class="item">
+                <div class="item-header">
+                    <span class="item-title">${edu.title}</span>
+                    <span class="item-date">${edu.date}</span>
+                </div>
+                <div class="item-subtitle">${edu.institution}</div>
+            </div>
         `;
-        educationContainer.appendChild(div);
     });
 
-    // Update skills
-    const skillsContainer = document.getElementById('skills');
-    skillsContainer.innerHTML = '';
-    data.skills.forEach(skillGroup => {
-        const div = document.createElement('div');
-        div.classList.add('skill-category');
-        div.innerHTML = `
-            <h4>${skillGroup.category}</h4>
-            <p>${skillGroup.items.join(', ')}</p>
+    // Skills
+    const skillsContainer = document.getElementById('cv-skills');
+    data.skills.forEach(skill => {
+        skillsContainer.innerHTML += `
+            <div class="skill-category">
+                <h4><i class="fas fa-tools"></i>${skill.category}</h4>
+                <p>${skill.items}</p>
+            </div>
         `;
-        skillsContainer.appendChild(div);
     });
 
-    // Update professional experience
-    const experienceContainer = document.getElementById('experience');
-    experienceContainer.innerHTML = '';
-    data.professional_experience.forEach(job => {
-        const div = document.createElement('div');
-        div.classList.add('experience-item');
-        div.innerHTML = `
-            <h3>${job.title} – ${job.company}</h3>
-            <span>${job.date}</span>
-            <ul>
-                ${job.description.map(desc => `<li>${desc}</li>`).join('')}
-            </ul>
+    // Experience
+    const expContainer = document.getElementById('cv-experience');
+    data.professional_experience.forEach(exp => {
+        expContainer.innerHTML += `
+            <div class="item">
+                <div class="item-header">
+                    <span class="item-title">${exp.title} - ${exp.company}</span>
+                    <span class="item-date">${exp.date}</span>
+                </div>
+                <div class="item-description">
+                    <ul>
+                        ${exp.description.map(d => `<li>${d}</li>`).join('')}
+                    </ul>
+                </div>
+            </div>
         `;
-        experienceContainer.appendChild(div);
     });
 
-    // Update certifications
-    const certificationsContainer = document.getElementById('certifications');
-    certificationsContainer.innerHTML = '';
+    // Certifications
+    const certContainer = document.getElementById('cv-certifications');
     data.certifications.forEach(cert => {
-        const li = document.createElement('li');
-        li.textContent = cert;
-        certificationsContainer.appendChild(li);
+        certContainer.innerHTML += `<span class="badge">${cert}</span>`;
     });
 
-    // Update languages
-    const languagesContainer = document.getElementById('languages');
-    languagesContainer.innerHTML = '';
+    // Languages
+    const langContainer = document.getElementById('cv-languages');
     data.languages.forEach(lang => {
-        const li = document.createElement('li');
-        li.textContent = `${lang.name} – ${lang.level}`;
-        languagesContainer.appendChild(li);
+        langContainer.innerHTML += `
+            <div class="language-item">
+                <span class="language-name">${lang.name}</span>
+                <span class="language-level">${lang.level}</span>
+            </div>
+        `;
     });
-
-    // Update last updated date (if available)
-    const lastUpdatedEl = document.getElementById('last-updated');
-    if (lastUpdatedEl && data.last_updated) {
-        lastUpdatedEl.textContent = `Last updated: ${data.last_updated}`;
-    }
 }
 
-// Load the CV on page load
 document.addEventListener('DOMContentLoaded', loadCVData);
+</script>
