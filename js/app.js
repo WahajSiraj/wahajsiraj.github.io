@@ -1,25 +1,27 @@
-// Paths (adjust if you move files)
+// --- CONFIGURATION ---
+// Update these paths if your files are in different folders
 const YAML_PATH = './cv.yml';
-const JSON_FALLBACK_PATH = './cv-data.json'; // optional fallback if you also add a JSON copy
+const JSON_FALLBACK_PATH = './cv-data.json'; // optional fallback
 
+// --- HELPER FUNCTIONS ---
 async function loadYAML(url) {
   const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`YAML fetch failed: ${res.status}`);
+  if (!res.ok) throw new Error(`Failed to fetch YAML: ${res.status}`);
   const text = await res.text();
   return jsyaml.load(text);
 }
 
 async function loadJSON(url) {
   const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`JSON fetch failed: ${res.status}`);
+  if (!res.ok) throw new Error(`Failed to fetch JSON: ${res.status}`);
   return res.json();
 }
 
-function asTextList(maybeArrayOrString) {
-  if (Array.isArray(maybeArrayOrString)) return maybeArrayOrString.join(', ');
-  return maybeArrayOrString || '';
+function asTextList(value) {
+  return Array.isArray(value) ? value.join(', ') : (value || '');
 }
 
+// --- MAIN UPDATE FUNCTION ---
 function updateCV(cv) {
   // Basic info
   document.getElementById('cv-name').textContent = cv.name || '';
@@ -38,9 +40,9 @@ function updateCV(cv) {
   document.getElementById('cv-summary').textContent = cv.summary || '';
   document.getElementById('cv-last-updated').textContent = cv.last_updated || '';
 
-  // Education
+  // --- Education ---
   const eduRoot = document.getElementById('cv-education');
-  eduRoot.innerHTML = '';
+  eduRoot.innerHTML = ''; // Clear existing
   (cv.education || []).forEach(edu => {
     eduRoot.insertAdjacentHTML(
       'beforeend',
@@ -54,23 +56,22 @@ function updateCV(cv) {
     );
   });
 
-  // Skills
+  // --- Skills ---
   const skillsRoot = document.getElementById('cv-skills');
-  skillsRoot.innerHTML = '';
+  skillsRoot.innerHTML = ''; // Clear existing
   (cv.skills || []).forEach(skill => {
-    const itemsText = asTextList(skill.items);
     skillsRoot.insertAdjacentHTML(
       'beforeend',
       `<div class="skill-category">
-        <h4><i class="fas fa-check-circle"></i>${skill.category || ''}:</h4>
-        <p>${itemsText}</p>
+        <h4><i class="fas fa-check-circle"></i> ${skill.category || ''}:</h4>
+        <p>${asTextList(skill.items)}</p>
       </div>`
     );
   });
 
-  // Experience
+  // --- Experience ---
   const expRoot = document.getElementById('cv-experience');
-  expRoot.innerHTML = '';
+  expRoot.innerHTML = ''; // Clear existing
   (cv.professional_experience || []).forEach(exp => {
     const bullets = (exp.description || []).map(d => `<li>${d}</li>`).join('');
     expRoot.insertAdjacentHTML(
@@ -88,16 +89,21 @@ function updateCV(cv) {
     );
   });
 
-  // Certifications
+  // --- Certifications ---
   const certRoot = document.getElementById('cv-certifications');
-  certRoot.innerHTML = '';
+  certRoot.innerHTML = ''; // Clear existing
   (cv.certifications || []).forEach(cert => {
-    certRoot.insertAdjacentHTML('beforeend', `<div class="item"><div class="item-title"><i class="fas fa-award"></i> ${cert}</div></div>`);
+    certRoot.insertAdjacentHTML(
+      'beforeend',
+      `<div class="item">
+        <div class="item-title"><i class="fas fa-award"></i> ${cert}</div>
+      </div>`
+    );
   });
 
-  // Languages
+  // --- Languages ---
   const langRoot = document.getElementById('cv-languages');
-  langRoot.innerHTML = '';
+  langRoot.innerHTML = ''; // Clear existing
   (cv.languages || []).forEach(lang => {
     langRoot.insertAdjacentHTML(
       'beforeend',
@@ -109,6 +115,7 @@ function updateCV(cv) {
   });
 }
 
+// --- LOAD DATA FUNCTION ---
 async function loadCVData() {
   try {
     const data = await loadYAML(YAML_PATH);
@@ -120,7 +127,6 @@ async function loadCVData() {
       updateCV(data);
     } catch (jsonErr) {
       console.error('Both YAML and JSON loads failed:', jsonErr);
-      // Last-resort minimal content so the page still renders
       updateCV({
         name: 'Sirajulhaq Wahaj',
         email: 'siraj.wahaj@outlook.com',
@@ -133,4 +139,5 @@ async function loadCVData() {
   }
 }
 
+// --- INITIALIZE ---
 document.addEventListener('DOMContentLoaded', loadCVData);
