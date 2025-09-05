@@ -1,44 +1,104 @@
-async function loadCV(file = 'data/cv1.yaml') {
-  const response = await fetch(file);
-  const yamlText = await response.text();
-  const data = jsyaml.load(yamlText);
+// script.js
 
-  document.getElementById('cv-title').innerText = `${data.name} - CV`;
-  document.getElementById('cv-name').innerText = data.name;
-  document.getElementById('cv-email').innerText = data.email;
-  document.getElementById('cv-email').href = `mailto:${data.email}`;
-  document.getElementById('cv-phone').innerText = data.phone;
-  document.getElementById('cv-address').innerText = data.address;
-  document.getElementById('cv-linkedin').innerText = "LinkedIn";
-  document.getElementById('cv-linkedin').href = data.linkedin;
-  document.getElementById('cv-github').innerText = "GitHub";
-  document.getElementById('cv-github').href = data.github;
-  document.getElementById('cv-summary').innerText = data.summary;
-  document.getElementById('cv-last-updated').innerText = data.last_updated;
+// Load YAML parser
+// Make sure to include this in your HTML: 
+// <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
 
-  // Education
-  const eduContainer = document.getElementById('cv-education');
-  eduContainer.innerHTML = "";
-  data.education.forEach(item => {
-    eduContainer.innerHTML += `<p><strong>${item.title}</strong> - ${item.institution} <em>(${item.date})</em></p>`;
-  });
-
-  // Skills
-  const skillContainer = document.getElementById('cv-skills');
-  skillContainer.innerHTML = "";
-  data.skills.forEach(skill => {
-    skillContainer.innerHTML += `<p><strong>${skill.category}:</strong> ${skill.items}</p>`;
-  });
-
-  // Experience
-  const expContainer = document.getElementById('cv-experience');
-  expContainer.innerHTML = "";
-  data.professional_experience.forEach(job => {
-    expContainer.innerHTML += `<p><strong>${job.title}</strong> at ${job.company} <em>(${job.date})</em></p>
-                               <ul>${job.description.map(d => `<li>${d}</li>`).join('')}</ul>`;
-  });
+async function loadCVData() {
+    try {
+        const response = await fetch('cv-data.yaml');
+        if (!response.ok) {
+            throw new Error(`Failed to fetch YAML: ${response.statusText}`);
+        }
+        const yamlText = await response.text();
+        const cvData = jsyaml.load(yamlText);
+        updateCV(cvData);
+    } catch (error) {
+        console.error('Error loading YAML data:', error);
+    }
 }
 
-const params = new URLSearchParams(window.location.search);
-const cvFile = params.get('cv') ? `data/${params.get('cv')}` : 'data/cv1.yaml';
-loadCV(cvFile);
+function updateCV(data) {
+    // Update basic information
+    document.getElementById('name').textContent = data.name;
+    document.getElementById('email').textContent = data.email;
+    document.getElementById('phone').textContent = data.phone;
+    document.getElementById('address').textContent = data.address;
+
+    // Update social links
+    document.getElementById('linkedin').href = data.linkedin;
+    document.getElementById('github').href = data.github;
+
+    // Update summary
+    document.getElementById('summary').textContent = data.summary;
+
+    // Update education
+    const educationContainer = document.getElementById('education');
+    educationContainer.innerHTML = '';
+    data.education.forEach(item => {
+        const div = document.createElement('div');
+        div.classList.add('education-item');
+        div.innerHTML = `
+            <h3>${item.title}</h3>
+            <p>${item.institution}</p>
+            <span>${item.date}</span>
+        `;
+        educationContainer.appendChild(div);
+    });
+
+    // Update skills
+    const skillsContainer = document.getElementById('skills');
+    skillsContainer.innerHTML = '';
+    data.skills.forEach(skillGroup => {
+        const div = document.createElement('div');
+        div.classList.add('skill-category');
+        div.innerHTML = `
+            <h4>${skillGroup.category}</h4>
+            <p>${skillGroup.items.join(', ')}</p>
+        `;
+        skillsContainer.appendChild(div);
+    });
+
+    // Update professional experience
+    const experienceContainer = document.getElementById('experience');
+    experienceContainer.innerHTML = '';
+    data.professional_experience.forEach(job => {
+        const div = document.createElement('div');
+        div.classList.add('experience-item');
+        div.innerHTML = `
+            <h3>${job.title} – ${job.company}</h3>
+            <span>${job.date}</span>
+            <ul>
+                ${job.description.map(desc => `<li>${desc}</li>`).join('')}
+            </ul>
+        `;
+        experienceContainer.appendChild(div);
+    });
+
+    // Update certifications
+    const certificationsContainer = document.getElementById('certifications');
+    certificationsContainer.innerHTML = '';
+    data.certifications.forEach(cert => {
+        const li = document.createElement('li');
+        li.textContent = cert;
+        certificationsContainer.appendChild(li);
+    });
+
+    // Update languages
+    const languagesContainer = document.getElementById('languages');
+    languagesContainer.innerHTML = '';
+    data.languages.forEach(lang => {
+        const li = document.createElement('li');
+        li.textContent = `${lang.name} – ${lang.level}`;
+        languagesContainer.appendChild(li);
+    });
+
+    // Update last updated date (if available)
+    const lastUpdatedEl = document.getElementById('last-updated');
+    if (lastUpdatedEl && data.last_updated) {
+        lastUpdatedEl.textContent = `Last updated: ${data.last_updated}`;
+    }
+}
+
+// Load the CV on page load
+document.addEventListener('DOMContentLoaded', loadCVData);
